@@ -1,0 +1,202 @@
+==== Junit =====
+
+-Testes Unitários: avaliam a menor porsão do código, um método
+	-Pode-se criar N testes que simularão cenários;
+ENTRADA + AÇÃO = RESULTADO
+	-pode-se ter diferentes resultados para ações iguais;
+
+3 Etapas
+	1º Cenário (Inicialização das Variáveis);
+	2º Ação (Invocação de método);
+	3º Validação (Resultado de acordo com o esperado);
+
+Princípio:
+	Fast
+	Independent
+	Repeatable
+	Self-Verifying
+	Timely
+
+Patterns XUnit
+	TestRunner - Quem vai executar os testes e coletar os resultados;
+	TestFixture - Pré condições necessárias;
+	TestSuite - elencar os testes a serem executados;
+	TestResultFormatter - padronizar os resultados dos testes;
+	Assertions - verifica o comportamento do que está sendo testado (lógicas);
+
+Asserts - Assertivas
+	-Diretamente ligada a expressões lógicas
+		-se for verdadeira, segue o caminho;
+		-se for false, o teste falha;
+
+	*Assert.assertTrue = verifica se um valor é verdadeiro (booleano);
+	*Assert.assertFalse = verifica se um valor é falso (booleano);
+	*Assert.assertEquals = verifica se um valor é igual ao outro, são passados dois valores;
+		.para valores flutuantes: terceiro parâmetro: delta de comparação (margem de erro de comparação/quantidade de casas decimais);
+
+	*Assert.assertSame - se são da mesma instância;
+	*Assert.assertNull - se o objeto é nulo;
+	
+
+	*Assert.assertThat...
+		-pode fazer a assertiva que quizer, incluse criando as próprias;
+		Assert.asserThat(returned, expected); expected - CoreMatchers.is(value)
+	
+
+Formas de Dividir um Teste
+	-além de independente, o teste deve ser isolado;
+	-"cada teste(método) apenas uma assertiva;
+
+	RULES: regras que alteras os testes
+		@Rule
+		public ErrorCollector error = new ErrorCollector();
+
+
+FALHAS: ocorre quando o teste é executado sem problemas, mas alguma condição esperada não foi atendida;
+ERRO: ocorre quando um problema durante a execução do teste impede que o mesmo seja concluido, ou seja, quando ocorre uma exceção inesperada ou não tratada;
+
+TESTE COM EXCEÇÃO ESPERADA:
+	1ªforma: @Test(expected = Exception.class)
+	2ªforma: try {
+			Locacao locacao = service.alugarFilme(usuario, filme);
+		} catch (Exception e) {
+			assertThat(e.getMessage(), is("Filme sem estoque"));
+		}
+	3ªforma: 
+		RULES
+
+BEFORE E AFTER: blocos de códigos para serem executados, antes ou após cada teste;
+BeforeClass e AfterClass: antes da classe (de teste) ser iniciada; tem que ser métodos estáticos;
+
+***CASO QUEIRO QUE UMA VARIÁVEL SEJA MANTIDA ENTRE OS TESTES, ELA TEM QUE SER ESTÁTICA***
+
+
+Ordem de execução dos testes: 
+	1ª forma: cria apenas UM método de teste chamando os outros métodos; (pior forma)
+	2ª forma: @FixMethodOrder(MethodSorters.{...});
+
+
+TDD - Test Driven Development
+	FORMA NORMAL:
+		1º Código;
+		2º Teste;
+		3º Refatoração;
+	TDD:	
+		1º Teste;
+		2º Código;
+		3º Refatoração;
+	
+		3 fases:
+			RED: ESCRITA DOS TESTES (ERRO DE COMPILAÇÃO)
+			GREEN: ESCRITA DO CÓDIGO
+			REFATORAÇÃO;
+
+		Nome do método: deve... (){}
+				//should...(){}
+				naoDeve...(){}
+				//shouldNotF...(){}		
+
+
+@Ignore: o teste não é executado;
+
+Assume.{...}: na primeira linha do teste, parecido com o Assert.
+	-caso o assume seja false, ele não é executado!
+
+
+TESTES PARAMETRIZÁVEIS:
+	-Parametrize;
+	-técnica chamada de:Data Driven Test (Teste Orientado a Dados);
+	@RunWith(Parameterized.class)
+	public class NameClass {
+	}
+	-cria uma método estático que retorna um Array bidimensional de objetos anotado com @Parameters; este serão os parâmetros, 
+	cada linah será um cenário distinto;
+	
+CRIANDO PRÓPRIOS MATCHES PARA assertThat
+	-cria a classe que extends TypeSafeMatcher;
+	-cria as variáveis utilizadas e o construtors;
+	-reescreve o método matchesSafely;
+
+
+SUÍTE DE TESTES:
+	-executar todas as classes de teste de uma única vez;
+	-cria uma classe anotada com @RunWith(Suite.class) e @SuiteClasses({ClasseTest1.class, ClasseTest2.class})
+
+
+CRIAÇÃO DE DADOS PARA TESTE
+	-CRIA UMA CLASSE COM O PATTERN SINGLETON E OS MÉTODOS NECESSÁRIOS;
+
+ANÁLISE DE COBERTURA:
+	-PERCENTUAL DE ACEITAÇÃO:
+		quantidade de testes que passaram;
+	-PERCENTUAL DE COBERTURA:
+		-eclipse > marketplace > eclemma
+
+
+====MOCKITO=====
+MOCKS:
+***TESTE UNITÁRIO NÃO DEVE TER DEPENDÊNCIA EXTERNA (ARQUIVOS, BANCO, ETC)***
+	-força de implementação "falsa" para dependências externas;
+
+	MOCKITO: substitui classes externas de forma dinâmica;
+	
+	Mocks: criação de objetos dinâmicos e mostra se eles foram utilizados;
+		Mockito.mock(Classe.class);
+		Mockito.when(method).thenReturn(value);
+		Mockito.verify(emailService).notificarAtraso(usuario2);
+
+ANOTAÇÕES:
+
+
+
+Lançando Exceções;
+@InjectMocks
+	private LocacaoService service;
+	@Mock
+	private LocacaoDAO dao;
+	@Mock
+	private SPCService spcService;
+	construtor{ MockitoAnnotations.initMocks(this); }
+
+@Mock: quando não é definida uma expectativa, ele retorna um valor padrão (false, null, 0, 0.0);
+@Spy: quando não é definida uma expectativa, ele retorna a execução do método; NÃO FUNCIONA COM INTERFACE, APENAS COM CLASSE CONCRETA;
+
+
+====POWER MOCK=====
+
+	Mockar construtor:
+		PowerMockito.whenNew(Date.class).withNoArguments().thenReturn(DataUtils.obterData(28, 4, 2017));
+
+	Mockar métodos estáticos:
+		PowerMockito.mockStatic(Calendar.class);
+		PowerMockito.when(Calendar.getInstance()).thenReturn(Instance);
+
+====TESTES EM PARARELOS=====
+
+public class ParallelRunner extends BlockJUnit4ClassRunner {
+	public ParallelRunner(Class<?> klass) throws InitializationError {
+		super(klass);
+		setScheduler(new ThreadPoll());
+	}
+	private static class ThreadPoll implements RunnerScheduler {
+		private ExecutorService executor;	
+		public ThreadPoll() {
+			executor = Executors.newFixedThreadPool(2);
+		}
+		public void schedule(Runnable run) {
+			executor.submit(run);
+		}
+		public void finished() {
+			executor.shutdown();
+			try {
+				executor.awaitTermination(10, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				throw new RuntimeException();
+			}
+		}
+	}
+}
+
+@RunWith(ParallelRunner.class)
+classe de test {}
